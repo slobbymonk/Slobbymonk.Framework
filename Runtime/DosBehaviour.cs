@@ -1,59 +1,64 @@
-using EventMessageSystem;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-
-public abstract class DosBehaviour : MonoBehaviour
+namespace Framework
 {
-    private readonly Dictionary<Type, object> messageBindings = new();
+    using Framework.Eventbus.EventMessageSystem;
+    using Framework.Eventbus;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UnityEngine;
 
-    protected virtual void OnEnable()
+    public abstract class DosBehaviour : MonoBehaviour
     {
-        RegisterHandlers();
-    }
+        private readonly Dictionary<Type, object> messageBindings = new();
 
-    protected virtual void OnDisable()
-    {
-        DeregisterHandlers();
-    }
-
-    private void RegisterHandlers()
-    {
-        var interfaces = GetType()
-            .GetInterfaces()
-            .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>));
-
-        foreach (var interfaceType in interfaces)
+        protected virtual void OnEnable()
         {
-            Type messageType = interfaceType.GetGenericArguments()[0];
-            var method = interfaceType.GetMethod("Handle");
+            RegisterHandlers();
+        }
 
-            if (method != null)
+        protected virtual void OnDisable()
+        {
+            DeregisterHandlers();
+        }
+
+        private void RegisterHandlers()
+        {
+            var interfaces = GetType()
+                .GetInterfaces()
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>));
+
+            foreach (var interfaceType in interfaces)
             {
-                var bindingType = typeof(MessageBinding<>).MakeGenericType(messageType);
-                var handlerDelegate = Delegate.CreateDelegate(typeof(Action<>).MakeGenericType(messageType), this, method);
+                Type messageType = interfaceType.GetGenericArguments()[0];
+                var method = interfaceType.GetMethod("Handle");
 
-                var bindingInstance = Activator.CreateInstance(bindingType, handlerDelegate);
-                messageBindings[messageType] = bindingInstance;
+                if (method != null)
+                {
+                    var bindingType = typeof(MessageBinding<>).MakeGenericType(messageType);
+                    var handlerDelegate = Delegate.CreateDelegate(typeof(Action<>).MakeGenericType(messageType), this, method);
 
-                var registerMethod = typeof(EventBus<>).MakeGenericType(messageType).GetMethod("Register");
-                registerMethod?.Invoke(null, new object[] { bindingInstance });
+                    var bindingInstance = Activator.CreateInstance(bindingType, handlerDelegate);
+                    messageBindings[messageType] = bindingInstance;
+
+                    var registerMethod = typeof(EventBus<>).MakeGenericType(messageType).GetMethod("Register");
+                    registerMethod?.Invoke(null, new object[] { bindingInstance });
+                }
             }
         }
-    }
 
-    private void DeregisterHandlers()
-    {
-        foreach (var kvp in messageBindings)
+        private void DeregisterHandlers()
         {
-            Type messageType = kvp.Key;
-            object bindingInstance = kvp.Value;
+            foreach (var kvp in messageBindings)
+            {
+                Type messageType = kvp.Key;
+                object bindingInstance = kvp.Value;
 
-            var deregisterMethod = typeof(EventBus<>).MakeGenericType(messageType).GetMethod("Deregister");
-            deregisterMethod?.Invoke(null, new object[] { bindingInstance });
+                var deregisterMethod = typeof(EventBus<>).MakeGenericType(messageType).GetMethod("Deregister");
+                deregisterMethod?.Invoke(null, new object[] { bindingInstance });
+            }
+
+            messageBindings.Clear();
         }
-
-        messageBindings.Clear();
     }
+
 }
