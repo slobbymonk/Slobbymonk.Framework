@@ -1,4 +1,4 @@
-namespace Framework.EventBus
+namespace Framework.Eventbus
 {
     using System;
 
