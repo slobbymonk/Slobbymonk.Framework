@@ -1,6 +1,5 @@
 namespace Framework.Eventbus
 {
-    using EventMessageSystem;
     using System.Collections.Generic;
     using UnityEngine;
 
