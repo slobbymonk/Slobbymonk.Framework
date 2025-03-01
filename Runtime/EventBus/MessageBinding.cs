@@ -1,35 +1,37 @@
-using EventMessageSystem;
-using System;
-
-public interface IMessageBinding<T>
+namespace Framework.EventBus
 {
-    public Action<T> OnEvent { get; set; }
-    public Action OnEventNoArgs { get; set; }
-}
+    using System;
 
-public class MessageBinding<T> : IMessageBinding<T> where T : IMessage
-{
-    Action<T> onMessage = _ => { };
-    Action onMessageNoArgs = () => { };
-
-    Action<T> IMessageBinding<T>.OnEvent
+    public interface IMessageBinding<T>
     {
-        get => onMessage;
-        set => onMessage = value;
+        public Action<T> OnEvent { get; set; }
+        public Action OnEventNoArgs { get; set; }
     }
 
-    Action IMessageBinding<T>.OnEventNoArgs
+    public class MessageBinding<T> : IMessageBinding<T> where T : IMessage
     {
-        get => onMessageNoArgs;
-        set => onMessageNoArgs = value;
+        Action<T> onMessage = _ => { };
+        Action onMessageNoArgs = () => { };
+
+        Action<T> IMessageBinding<T>.OnEvent
+        {
+            get => onMessage;
+            set => onMessage = value;
+        }
+
+        Action IMessageBinding<T>.OnEventNoArgs
+        {
+            get => onMessageNoArgs;
+            set => onMessageNoArgs = value;
+        }
+
+        public MessageBinding(Action<T> onMessage) => this.onMessage = onMessage;
+        public MessageBinding(Action ononMessageNoArgs) => this.onMessageNoArgs = ononMessageNoArgs;
+
+        public void Add(Action onMessage) => onMessageNoArgs += onMessage;
+        public void Remove(Action onMessage) => onMessageNoArgs -= onMessage;
+
+        public void Add(Action<T> onMessage) => this.onMessage += onMessage;
+        public void Remove(Action<T> onMessage) => this.onMessage -= onMessage;
     }
-
-    public MessageBinding(Action<T> onMessage) => this.onMessage = onMessage;
-    public MessageBinding(Action ononMessageNoArgs) => this.onMessageNoArgs = ononMessageNoArgs;
-
-    public void Add(Action onMessage) => onMessageNoArgs += onMessage;
-    public void Remove(Action onMessage) => onMessageNoArgs -= onMessage;
-
-    public void Add(Action<T> onMessage) => this.onMessage += onMessage;
-    public void Remove(Action<T> onMessage) => this.onMessage -= onMessage;
 }

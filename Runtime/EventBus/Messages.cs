@@ -1,4 +1,4 @@
-﻿namespace EventMessageSystem
+﻿namespace Framework.EventBus
 {
     /// <summary>
     /// Defines message types that can be broadcasted.

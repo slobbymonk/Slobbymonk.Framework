@@ -1,0 +1,11 @@
+{
+  "name": "com.slobbymonk.framework",
+  "version": "1.0.0",
+  "displayName": "Framework",
+  "description": "This is a framework package I can use in my projects to get handy code right away.",
+  "unity": "2022.1",
+  "author": {
+    "name": "Slobbymonk",
+    "url": "https://sebastiensurmont.github.io/"
+  }
+}

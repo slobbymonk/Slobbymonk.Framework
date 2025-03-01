@@ -1,31 +1,34 @@
-using EventMessageSystem;
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class EventBus<T> where T : IMessage
+namespace Framework.Eventbus
 {
-    static readonly HashSet<IMessageBinding<T>> bindings = new HashSet<IMessageBinding<T>>();
+    using EventMessageSystem;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-    public static void Register(MessageBinding<T> binding) => bindings.Add(binding);
-    public static void Deregister(MessageBinding<T> binding) => bindings.Remove(binding);
-
-    public static void Publish(T @event)
+    public static class EventBus<T> where T : IMessage
     {
-        var snapshot = new HashSet<IMessageBinding<T>>(bindings);
+        static readonly HashSet<IMessageBinding<T>> bindings = new HashSet<IMessageBinding<T>>();
 
-        foreach (var binding in snapshot)
+        public static void Register(MessageBinding<T> binding) => bindings.Add(binding);
+        public static void Deregister(MessageBinding<T> binding) => bindings.Remove(binding);
+
+        public static void Publish(T @event)
         {
-            if (bindings.Contains(binding))
+            var snapshot = new HashSet<IMessageBinding<T>>(bindings);
+
+            foreach (var binding in snapshot)
             {
-                binding.OnEvent.Invoke(@event);
-                binding.OnEventNoArgs.Invoke();
+                if (bindings.Contains(binding))
+                {
+                    binding.OnEvent.Invoke(@event);
+                    binding.OnEventNoArgs.Invoke();
+                }
             }
         }
-    }
 
-    static void Clear()
-    {
-        Debug.Log($"Clearing {typeof(T).Name} bindings");
-        bindings.Clear();
+        static void Clear()
+        {
+            Debug.Log($"Clearing {typeof(T).Name} bindings");
+            bindings.Clear();
+        }
     }
 }

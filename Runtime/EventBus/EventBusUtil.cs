@@ -1,17 +1,19 @@
-﻿using System;
-using System.Reflection;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
-using EventMessageSystem;
-
-/// <summary>
-/// Contains methods and properties related to event buses and event types in the Unity application.
-/// </summary>
-public static class EventBusUtil
+﻿namespace Framework.Eventbus
 {
-    public static IReadOnlyList<Type> EventTypes { get; set; }
-    public static IReadOnlyList<Type> EventBusTypes { get; set; }
+    using System;
+    using System.Reflection;
+    using System.Collections.Generic;
+    using UnityEditor;
+    using UnityEngine;
+    using EventMessageSystem;
+
+    /// <summary>
+    /// Contains methods and properties related to event buses and event types in the Unity application.
+    /// </summary>
+    public static class EventBusUtil
+    {
+        public static IReadOnlyList<Type> EventTypes { get; set; }
+        public static IReadOnlyList<Type> EventBusTypes { get; set; }
 
 #if UNITY_EDITOR
     public static PlayModeStateChange PlayModeState { get; set; }
@@ -42,46 +44,47 @@ public static class EventBusUtil
     }
 #endif
 
-    /// <summary>
-    /// Initializes the EventBusUtil class at runtime before the loading of any scene.
-    /// The [RuntimeInitializeOnLoadMethod] attribute instructs Unity to execute this method after
-    /// the game has been loaded but before any scene has been loaded, in both Play Mode and after
-    /// a Build is run. This guarantees that necessary initialization of bus-related types and events is
-    /// done before any game objects, scripts or components have started.
-    /// </summary>
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-    public static void Initialize()
-    {
-        EventTypes = PredefinedAssemblyUtil.GetTypes(typeof(IMessage));
-        EventBusTypes = InitializeAllBuses();
-    }
-
-    static List<Type> InitializeAllBuses()
-    {
-        List<Type> eventBusTypes = new List<Type>();
-
-        var typedef = typeof(EventBus<>);
-        foreach (var eventType in EventTypes)
+        /// <summary>
+        /// Initializes the EventBusUtil class at runtime before the loading of any scene.
+        /// The [RuntimeInitializeOnLoadMethod] attribute instructs Unity to execute this method after
+        /// the game has been loaded but before any scene has been loaded, in both Play Mode and after
+        /// a Build is run. This guarantees that necessary initialization of bus-related types and events is
+        /// done before any game objects, scripts or components have started.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void Initialize()
         {
-            var busType = typedef.MakeGenericType(eventType);
-            eventBusTypes.Add(busType);
-            Debug.Log($"Initialized EventBus<{eventType.Name}>");
+            EventTypes = PredefinedAssemblyUtil.GetTypes(typeof(IMessage));
+            EventBusTypes = InitializeAllBuses();
         }
 
-        return eventBusTypes;
-    }
-
-    /// <summary>
-    /// Clears (removes all listeners from) all event buses in the application.
-    /// </summary>
-    public static void ClearAllBuses()
-    {
-        Debug.Log("Clearing all buses...");
-        for (int i = 0; i < EventBusTypes.Count; i++)
+        static List<Type> InitializeAllBuses()
         {
-            var busType = EventBusTypes[i];
-            var clearMethod = busType.GetMethod("Clear", BindingFlags.Static | BindingFlags.NonPublic);
-            clearMethod?.Invoke(null, null);
+            List<Type> eventBusTypes = new List<Type>();
+
+            var typedef = typeof(EventBus<>);
+            foreach (var eventType in EventTypes)
+            {
+                var busType = typedef.MakeGenericType(eventType);
+                eventBusTypes.Add(busType);
+                Debug.Log($"Initialized EventBus<{eventType.Name}>");
+            }
+
+            return eventBusTypes;
+        }
+
+        /// <summary>
+        /// Clears (removes all listeners from) all event buses in the application.
+        /// </summary>
+        public static void ClearAllBuses()
+        {
+            Debug.Log("Clearing all buses...");
+            for (int i = 0; i < EventBusTypes.Count; i++)
+            {
+                var busType = EventBusTypes[i];
+                var clearMethod = busType.GetMethod("Clear", BindingFlags.Static | BindingFlags.NonPublic);
+                clearMethod?.Invoke(null, null);
+            }
         }
     }
 }

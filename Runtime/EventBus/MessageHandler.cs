@@ -1,32 +1,35 @@
-using EventMessageSystem;
-using UnityEngine;
-
-namespace EventMessageSystem
+namespace Framework.Eventbus
 {
-    public interface IMessageHandler<T> where T : IMessage
-    {
-        void Handle(T message);
-    }
-}
+    using Framework.Eventbus.EventMessageSystem;
+    using UnityEngine;
 
-public abstract class MessageHandlerBase<T> : MonoBehaviour, IMessageHandler<T> where T : IMessage
-{
-    private MessageBinding<T> messageBinding;
-
-    protected virtual void Awake()
+    namespace EventMessageSystem
     {
-        messageBinding = new MessageBinding<T>(Handle);
+        public interface IMessageHandler<T> where T : IMessage
+        {
+            void Handle(T message);
+        }
     }
 
-    protected virtual void OnEnable()
+    public abstract class MessageHandlerBase<T> : MonoBehaviour, IMessageHandler<T> where T : IMessage
     {
-        EventBus<T>.Register(messageBinding);
-    }
+        private MessageBinding<T> messageBinding;
 
-    protected virtual void OnDisable()
-    {
-        EventBus<T>.Deregister(messageBinding);
-    }
+        protected virtual void Awake()
+        {
+            messageBinding = new MessageBinding<T>(Handle);
+        }
 
-    public abstract void Handle(T message);
+        protected virtual void OnEnable()
+        {
+            EventBus<T>.Register(messageBinding);
+        }
+
+        protected virtual void OnDisable()
+        {
+            EventBus<T>.Deregister(messageBinding);
+        }
+
+        public abstract void Handle(T message);
+    }
 }
