@@ -1,16 +1,11 @@
 namespace Framework.Eventbus
 {
-    using Framework.Eventbus.EventMessageSystem;
     using UnityEngine;
 
-    namespace EventMessageSystem
+    public interface IMessageHandler<T> where T : IMessage
     {
-        public interface IMessageHandler<T> where T : IMessage
-        {
-            void Handle(T message);
-        }
+        void Handle(T message);
     }
-
     public abstract class MessageHandlerBase<T> : MonoBehaviour, IMessageHandler<T> where T : IMessage
     {
         private MessageBinding<T> messageBinding;
