@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using System.IO;
 
 namespace Framework.DebugMessages
 {
-    public static class DebugMessagesManager
+    public static class Log
     {
         public enum LogLevel
         {
@@ -24,11 +22,16 @@ namespace Framework.DebugMessages
         {
             get
             {
+#if UNITY_EDITOR
                 return EditorPrefs.GetBool(LoggingEnabledKey, true);
+#endif
+                return true; // Default to true if not in editor
             }
             set
             {
+#if UNITY_EDITOR
                 EditorPrefs.SetBool(LoggingEnabledKey, value);
+#endif
             }
         }
 
@@ -36,13 +39,19 @@ namespace Framework.DebugMessages
         {
             get
             {
+#if UNITY_EDITOR
                 return (LogLevel)EditorPrefs.GetInt(LoggingLevelKey, (int)LogLevel.Info); // Default to Info
+#endif
+                return LogLevel.Verbose; // Default to Info if not in editor
             }
             set
             {
+#if UNITY_EDITOR
                 EditorPrefs.SetInt(LoggingLevelKey, (int)value);
+#endif
             }
         }
+#if UNITY_EDITOR
 
         #region ToolMenuItems
         [MenuItem("Tools/Debugger/Toggle Debug Logging")]
@@ -97,7 +106,7 @@ namespace Framework.DebugMessages
             Debug.Log("Log Level set to: Critical");
         }
         #endregion
-
+#endif
         private static bool ShouldLog(LogLevel level)
         {
             return LoggingEnabled && (int)level >= (int)CurrentLogLevel;
@@ -111,26 +120,21 @@ namespace Framework.DebugMessages
         {
             if (Application.isEditor) return;
 
-            // Use a platform-independent location
-            string logDirectory = Path.Combine(Application.persistentDataPath, "Logs");
-            if (!Directory.Exists(logDirectory))
+            try
             {
-                Directory.CreateDirectory(logDirectory);
+                string logDirectory = Path.Combine(Application.persistentDataPath, "Logs");
+                if (!Directory.Exists(logDirectory))
+                {
+                    Directory.CreateDirectory(logDirectory);
+                }
+
+                string logFilePath = Path.Combine(logDirectory, "debug_log.txt");
+                File.AppendAllText(logFilePath, message + "\n");
             }
-
-            string logFilePath = Path.Combine(logDirectory, "debug_log.txt");
-
-            File.AppendAllText(logFilePath, message + "\n");
-
-            // Additionally, add an instructions file for the user
-            string instructionsFilePath = Path.Combine(logDirectory, "log_instructions.txt");
-            if (!File.Exists(instructionsFilePath))
+            catch (IOException ex)
             {
-                string instructions = "The logs for this build can be found in the 'Logs' folder.\n" +
-                                       "Log file: debug_log.txt\n" +
-                                       "Location: " + logDirectory + "\n" +
-                                       "Please provide this file if you encounter any issues.";
-                File.WriteAllText(instructionsFilePath, instructions);
+                // Optionally log to a fallback system or ignore
+                Debug.LogError("Failed to write log to file: " + ex.Message);
             }
         }
 #endif
@@ -154,7 +158,7 @@ namespace Framework.DebugMessages
         }
 
         #region LogMethods
-        public static void Log(MonoBehaviour callingBehaviour, string message, LogLevel level = LogLevel.Info, Color? textColour = null)
+        public static void LogMessage(MonoBehaviour callingBehaviour, string message, LogLevel level = LogLevel.Info, Color? textColour = null)
         {
             if (ShouldLog(level))
             {

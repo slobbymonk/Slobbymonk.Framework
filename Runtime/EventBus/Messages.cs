@@ -1,4 +1,6 @@
-﻿namespace Framework.Eventbus
+﻿using UnityEngine;
+
+namespace Framework.Eventbus
 {
     /// <summary>
     /// Defines message types that can be broadcasted.
@@ -9,7 +11,15 @@
 
     public class Template : IMessage
     {
-        
+
     }
-    public class HumanGotRunOverMessage : IMessage { }
+    public class HumanGotRunOverMessage : IMessage
+    {
+        public Transform Human { get; set; }
+        public HumanGotRunOverMessage(Transform human)
+        {
+            Human = human;
+        }
+    }
+    public class PlayerRespawnMessage : IMessage { }
 }
