@@ -21,5 +21,4 @@ namespace Framework.Eventbus
             Human = human;
         }
     }
-    public class PlayerRespawnMessage : IMessage { }
 }
