@@ -7,8 +7,5 @@
   "author": {
     "name": "Slobbymonk",
     "url": "https://sebastiensurmont.github.io/"
-  },
-  "dependencies": {
-    "com.cysharp.unitask": "2.5.0"
   }
 }
