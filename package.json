@@ -9,6 +9,6 @@
     "url": "https://sebastiensurmont.github.io/"
   },
   "dependencies": {
-    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/UniTask"
+    "com.cysharp.unitask": "2.5.0"
   }
 }
